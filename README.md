@@ -10,13 +10,13 @@ For questions please contact Francisca Concha-Ramírez, fconcha at strw.leidenun
 
 ### Prerequisites
 * Python 2.7. Should work fine with Python 3 but it has not been tested.
-* AMUSE: https://github.com/amusecode/amuse
+* AMUSE: https://amusecode.github.io
 * vader: https://bitbucket.org/krumholz/vader/src
 * scipy
 
 ### Running the simulations
 
-The main file to run the simulatoins is ```vader_cluster_parallel.py``` located in the ```src``` folder. You can run an individual simulation by using the AMUSE script directly from the home directory:
+The main file to run the simulations is ```vader_cluster_parallel.py``` located in the ```src``` folder. You can run an individual simulation by using the AMUSE script directly from the home directory:
 
 ```
 amuse.sh src/vader_cluster_parallel.py
