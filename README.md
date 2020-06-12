@@ -16,32 +16,37 @@ For questions please contact Francisca Concha-Ramírez, fconcha at strw.leidenun
 
 ### Running the simulations
 
-You can run an individual simulation by using the AMUSE script directly:
+The main file to run the simulatoins is ```vader_cluster_parallel.py``` located in the ```src``` folder. You can run an individual simulation by using the AMUSE script directly from the home directory:
 
 ```
-amuse.sh vader_cluster_parallel.py
+amuse.sh src/vader_cluster_parallel.py
 ```
 
-The script has extensive options which can be passed through the command line. For a list of these options run:
+The script has extensive options which can be passed through the command line, for number of stars, radius of the cluster, etc. For a list of these options run:
 
 ```
-amuse.sh vader_cluster_parallel.py --help
+amuse.sh src/vader_cluster_parallel.py --help
 ```
 
 ### Creating the plots
 
-All figures of the paper (except Figures 3 and 4, which are flow charts) were created using the script ``plots.py``:
+There are several different scripts to create the Figures of the paper. All of them are located in the ```plots``` folder:
+
+* Figure 1: ```tracks.py```
+* Figures 2 and 3: ```disk_fractions.py```
+* Figure 4: ```radiation.py```
+* Figures 5 and 6: ```binned.py```
+* Figures 7 and 8: ```cumulative_distributions.py```
+* Figures 9 and 10: ```scatter_plots.py```
+
+Each script can be run with
 
 ```
-amuse.sh plots.py
+amuse.sh plots/<script>.py
 ```
-A list of options is available for this script, including the path to the files that you want to use for the plots. To see the list of options add ```--help``` or ```-h``` to the line above.
 
-The tests and figures of the appendix can be created using the script ``tests.py``:
+A list of options is available for each script, including the path to the files that you want to use for the plots. To see the list of options add ```--help``` or ```-h``` to the line above.
 
-```
-amuse.sh tests.py
-```
 
 ## License
 
