@@ -27,7 +27,7 @@ def tracks(open_path, N, save_path, t_end, save, nrun):
     times = numpy.arange(0.000, t_end + dt, dt)
 
     # Indexes of stars to plot
-    chosen_stars = [166, 811, 963, 33, 58, 69, 171]
+    chosen_stars = [811, 963, 33, 58, 171, 611, 97]
     massive_stars = [325, 37, 189, 339]
 
     label = open_path.split('/')[-2].split('_')[1].split('R')[1]
@@ -83,23 +83,23 @@ def tracks(open_path, N, save_path, t_end, save, nrun):
             37: stars0[37].x.value_in(units.parsec) + stars0[37].x.value_in(units.parsec) / 10,
             189: stars0[189].x.value_in(units.parsec) + stars0[189].x.value_in(units.parsec) / 10,
             339: stars0[339].x.value_in(units.parsec) + 0.1,
-            166: stars0[166].x.value_in(units.parsec),
+            611: stars0[611].x.value_in(units.parsec),
             811: stars0[811].x.value_in(units.parsec) - 0.1,
             963: stars0[963].x.value_in(units.parsec),
             33: stars0[33].x.value_in(units.parsec) - 0.1,
             58: stars0[58].x.value_in(units.parsec) + 0.1,
-            69: stars0[69].x.value_in(units.parsec),
+            97: stars0[97].x.value_in(units.parsec) - 0.2,
             171: stars0[171].x.value_in(units.parsec) - 0.1}
     locy = {325: stars0[325].y.value_in(units.parsec) + 0.1,
             37: stars0[37].y.value_in(units.parsec) - 0.2,
             189: stars0[189].y.value_in(units.parsec) + 0.05,
             339: stars0[339].y.value_in(units.parsec) - 0.05,
-            166: stars0[166].y.value_in(units.parsec) + 0.1,
+            611: stars0[611].y.value_in(units.parsec) + 0.1,
             811: stars0[811].y.value_in(units.parsec) - 0.2,
             963: stars0[963].y.value_in(units.parsec) + 0.05,
             33: stars0[33].y.value_in(units.parsec) + 0.1,
             58: stars0[58].y.value_in(units.parsec),
-            69: stars0[69].y.value_in(units.parsec) + 0.1,
+            97: stars0[97].y.value_in(units.parsec) + 0.1,
             171: stars0[171].y.value_in(units.parsec) + 0.1
             }
 
