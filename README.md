@@ -9,7 +9,7 @@ For questions please contact Francisca Concha-Ramírez, fconcha at strw.leidenun
 ## Getting Started
 
 ### Prerequisites
-* Python 2.7. Should work fine with Python 3 but it has not been tested.
+* Python 3
 * AMUSE: https://amusecode.github.io
 * vader: https://bitbucket.org/krumholz/vader/src
 * scipy
