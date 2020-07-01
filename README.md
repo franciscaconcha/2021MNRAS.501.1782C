@@ -19,16 +19,19 @@ For questions please contact Francisca Concha-Ramírez, fconcha at strw.leidenun
 
 You need to install AMUSE with the developer option so that you can access the source code.
 Then, download VADER and put it inside the folder: ```/amuse/src/amuse/community```. 
-In the ```/vader``` folder in this repository there are several files related to VADER. They should go in the following locations:
+In the ```/vader``` folder in this repository there are several files related to VADER. They should go in the following directories:
 
-* ```interface.cc```, ```interface.py```, and ```Makefile``` should go on ```/amuse/src/amuse/community/vader/```
-* ```userFunc_pedisk.c``` should go on ```amuse/src/amuse/community/vader/src/prob```
-* Compile VADER from the main AMUSE folder with ```make vader.code```
+* ```interface.cc``` and ```interface.py``` should go on ```/amuse/src/amuse/community/vader/```
+* ```userFunc_pedisk.c``` and ```userFunc_none.c``` should go on ```amuse/src/amuse/community/vader/src/prob``` (these 2 files are redundant but it was away to go around some compilation issues)
+* ```Makefile_interface``` should go on ```/amuse/src/amuse/community/vader/``` and renamed ```Makefile```
+* ```Makefile_source``` should go on ```/amuse/src/amuse/community/vader/src/``` and renamed ```Makefile```
+* Compile VADER from the main AMUSE directory with ```make vader.code```
 * Add this line to ```amuse/src/amuse/lab.py```: 
 ```
 from amuse.community.vader.interface import vader, vaderInterface
 ```
 
+You should now be ready to run the simulation scripts.
 
 ### Running the simulations
 
