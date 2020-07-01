@@ -12,8 +12,23 @@ For questions please contact Francisca Concha-Ramírez, fconcha at strw.leidenun
 ### Prerequisites
 * Python 3
 * AMUSE: https://amusecode.github.io
-* vader: https://bitbucket.org/krumholz/vader/src
+* VADER: https://bitbucket.org/krumholz/vader/src
 * scipy
+
+### How to set up
+
+You need to install AMUSE with the developer option so that you can access the source code.
+Then, download VADER and put it inside the folder: ```/amuse/src/amuse/community```. 
+In the ```/vader``` folder in this repository there are several files related to VADER. They should go in the following locations:
+
+* ```interface.cc```, ```interface.py```, and ```Makefile``` should go on ```/amuse/src/amuse/community/vader/```
+* ```userFunc_pedisk.c``` should go on ```amuse/src/amuse/community/vader/src/prob```
+* Compile VADER from the main AMUSE folder with ```make vader.code```
+* Add this line to ```amuse/src/amuse/lab.py```: 
+```
+from amuse.community.vader.interface import vader, vaderInterface
+```
+
 
 ### Running the simulations
 
