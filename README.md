@@ -9,7 +9,7 @@ For questions please contact Francisca Concha-Ramírez, fconcha at strw.leidenun
 
 ## Getting Started
 
-### Prerequisites
+### Requisites
 * Python 3
 * AMUSE: https://amusecode.github.io
 * VADER: https://bitbucket.org/krumholz/vader/src
@@ -49,7 +49,7 @@ amuse.sh src/vader_cluster_parallel.py --help
 
 ### Creating the plots
 
-There are several different scripts to create the Figures of the paper. All of them are located in the ```plots``` folder:
+There are several different scripts to create the Figures of the paper. All of them are located in the ```plots``` directoy:
 
 * Figure 1: ```tracks.py```
 * Figures 2 and 3: ```disk_fractions.py```
@@ -64,7 +64,7 @@ Each script can be run with
 amuse.sh plots/<script>.py
 ```
 
-A list of options is available for each script, including the path to the files that you want to use for the plots. To see the list of options add ```--help``` or ```-h``` to the line above.
+A list of options is available for each script, including the path to the files that you want to use for the plots. To see the list of options add ```--help``` or ```-h``` to the line above. The results used on the paper are available in the ```results/``` directory.
 
 
 ## License
