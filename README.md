@@ -22,7 +22,7 @@ Then, download VADER and put it inside the folder: ```/amuse/src/amuse/community
 In the ```/vader``` folder in this repository there are several files related to VADER. They should go in the following directories:
 
 * ```interface.cc``` and ```interface.py``` should go on ```/amuse/src/amuse/community/vader/```
-* ```userFunc_pedisk.c``` and ```userFunc_none.c``` should go on ```amuse/src/amuse/community/vader/src/prob``` (these 2 files are redundant but it was away to go around some compilation issues)
+* ```userFunc_pedisk.c``` and ```userFunc_none.c``` should go on ```amuse/src/amuse/community/vader/src/prob``` (these 2 files are redundant but it was a way to go around some compilation issues)
 * ```Makefile_interface``` should go on ```/amuse/src/amuse/community/vader/``` and renamed ```Makefile```
 * ```Makefile_source``` should go on ```/amuse/src/amuse/community/vader/src/``` and renamed ```Makefile```
 * Compile VADER from the main AMUSE directory with ```make vader.code```
