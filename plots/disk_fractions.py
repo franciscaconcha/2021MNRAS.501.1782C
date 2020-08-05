@@ -571,9 +571,9 @@ def disk_fractions(open_path, save_path, t_end, N, nruns, save):
                     f = '{0}/N{1}_t{2:.3f}.hdf5'.format(run_path, N, last_t)
                     stars = io.read_set_from_file(f, 'hdf5', close_file=True)
                 if t == 0.0:
-                    init_disks = len(stars[stars.disked])
+                    init_disks = float(len(stars[stars.disked]))
                 disked_stars = stars[stars.disked]
-                fraction = float(len(disked_stars)) / float(init_disks)
+                fraction = float(len(disked_stars)) / init_disks
                 mfraction = numpy.mean(disked_stars.disk_mass.value_in(units.MJupiter))
                 fractions.append(fraction)
                 mfractions.append(mfraction)
@@ -613,9 +613,10 @@ def disk_fractions(open_path, save_path, t_end, N, nruns, save):
                   fontsize=22, framealpha=0.4)
 
     pyplot.xlim([0.0, t_end])
+    pyplot.ylim([0.0, 1.0])
 
     if save:
-        pyplot.savefig('{0}/N1E3_disc_fractions.png'.format(save_path, N))
+        pyplot.savefig('{0}/disc_fractions.png'.format(save_path, N))
 
 
 def separated_masses(open_path, save_path, t_end, N, nruns, save):
@@ -648,18 +649,22 @@ def separated_masses(open_path, save_path, t_end, N, nruns, save):
             fractions_low = []
             fractions_high = []
             run_path = '{0}/{1}'.format(path, n)
+            init_disks = 0
             for t in times:
                 f = '{0}/N{1}_t{2:.3f}.hdf5'.format(run_path, N, t)
                 stars = io.read_set_from_file(f, 'hdf5', close_file=True)
                 disked_stars = stars[stars.disked]
 
+                if t == 0.0:
+                    init_disks = float(len(disked_stars))
+
                 low_mass = disked_stars[disked_stars.stellar_mass <= 0.5 | units.MSun ]
                 high_mass = disked_stars[disked_stars.stellar_mass > 0.5 | units.MSun ]
 
-                fraction_low = float(len(low_mass)) / float(len(stars))
+                fraction_low = float(len(low_mass)) / init_disks
                 fractions_low.append(fraction_low)
 
-                fraction_high = float(len(high_mass)) / float(len(stars))
+                fraction_high = float(len(high_mass)) / init_disks
                 fractions_high.append(fraction_high)
 
             all_fractions_low_mass.append(fractions_low)
@@ -739,17 +744,16 @@ def separated_masses(open_path, save_path, t_end, N, nruns, save):
                   fontsize=22, framealpha=0.4)
 
     axs[0].text(1.1, 0.55, r'$\mathrm{M}_* \leq 0.5 \mathrm{M}_{\odot}$', fontsize=28)
-    axs[1].text(0.25, 0.102, r'$0.5 \mathrm{M}_{\odot} < \mathrm{M}_* \leq 1.9 \mathrm{M}_{\odot}$', fontsize=28)
+    axs[1].text(0.25, 0.105, r'$0.5 \mathrm{M}_{\odot} < \mathrm{M}_* \leq 1.9 \mathrm{M}_{\odot}$', fontsize=28)
 
     fig.subplots_adjust(top=0.96, hspace=0.2)
 
-    axs[0].set_title(r'N = $10^3$')
     axs[0].set_xlim([0.0, t_end])
     axs[1].set_xlim([0.0, t_end])
     axs[0].set_ylim([0.0, 1.0])
 
     if save:
-        pyplot.savefig('{0}/N1E3_separate_disc_fractions.png'.format(save_path, N))
+        pyplot.savefig('{0}/separate_disc_fractions.png'.format(save_path, N))
 
 
 def count_stars(open_path, N, nruns):
@@ -806,11 +810,71 @@ def count_stars(open_path, N, nruns):
         print "*"
 
 
-def disk_lifetimes(open_path, N, nruns, t_end):
+def disk_survival(open_path, N, nruns, t_end):
+    from lifelines import KaplanMeierFitter
+    from collections import defaultdict
+
     dt = 0.005
     times = numpy.arange(0.0, t_end + dt, dt)
 
-    folders = ['N1E4_R25', 'N1E4_R5']
+    for folder in folders:
+        path = '{0}/{1}/'.format(open_path, folder)
+        all_times = []
+        all_stds = []
+        print folder
+
+        durations = []
+        event_observed = []
+
+        for n in range(nruns):
+            run_path = '{0}/{1}'.format(path, n)
+            dispersed_times = []
+            prev_t = 0.0
+            for t in times:
+                prev_f = '{0}/N{1}_t{2:.3f}.hdf5'.format(run_path, N, prev_t)
+                prev_stars = io.read_set_from_file(prev_f, 'hdf5', close_file=True)
+                f = '{0}/N{1}_t{2:.3f}.hdf5'.format(run_path, N, t)
+                stars = io.read_set_from_file(f, 'hdf5', close_file=True)
+
+                for s in range(len(stars)):
+                    if not stars[s].disked and prev_stars[s].disked:
+                        dispersed_times.append(t)
+                        durations.append(t)
+                        event_observed.append(1)
+                    elif not stars[s].disked and not prev_stars[s].disked:
+                        durations.append(t)
+                        event_observed.append(1)
+                    else:
+                        durations.append(t)
+                        event_observed.append(0)
+
+                prev_t = t
+            all_times.append(numpy.mean(dispersed_times))
+            all_stds.append(numpy.std(dispersed_times))
+
+        #durations = durations_dict.keys()
+        #event_observed = durations_dict.values()
+
+        #print durations
+        #print event_observed
+
+        print numpy.mean(all_times)
+        print numpy.mean(all_stds)
+
+        ## create a kmf object
+        kmf = KaplanMeierFitter()
+
+        ## Fit the data into the model
+        kmf.fit(durations, event_observed, label=folder)
+        print kmf.median_
+
+        ## Create an estimate
+        kmf.plot()
+
+
+def disk_lifetimes(open_path, N, nruns, t_end):
+    dt = 0.005
+    times = numpy.arange(0.0, t_end + dt, dt)
 
     for folder in folders:
         path = '{0}/{1}/'.format(open_path, folder)
@@ -870,12 +934,13 @@ def main(open_path, N, save_path, t_end, save, nruns):
     # My own stylesheet, comment out if not needed
     pyplot.style.use('paper')
 
-    #separated_masses(open_path, save_path, t_end, N, nruns, save)
-    disk_fractions(open_path, save_path, t_end, N, nruns, save)
+    separated_masses(open_path, save_path, t_end, N, nruns, save)
+    #disk_fractions(open_path, save_path, t_end, N, nruns, save)
 
     #count_stars(open_path, N, nruns)
     #disk_lifetimes(open_path, N, nruns, t_end)
     #disks_halflife(open_path, N, nruns, t_end)
+    #disk_survival(open_path, N, nruns, t_end)
 
     if not save:
         pyplot.show()
