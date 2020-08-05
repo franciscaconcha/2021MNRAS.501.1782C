@@ -561,6 +561,7 @@ def disk_fractions(open_path, save_path, t_end, N, nruns, save):
             mfractions = []
             run_path = '{0}/{1}'.format(path, n)
             last_t = 0.0
+            init_disks = 0
             for t in times:
                 try:
                     f = '{0}/N{1}_t{2:.3f}.hdf5'.format(run_path, N, t)
@@ -569,8 +570,10 @@ def disk_fractions(open_path, save_path, t_end, N, nruns, save):
                 except:
                     f = '{0}/N{1}_t{2:.3f}.hdf5'.format(run_path, N, last_t)
                     stars = io.read_set_from_file(f, 'hdf5', close_file=True)
+                if t == 0.0:
+                    init_disks = len(stars[stars.disked])
                 disked_stars = stars[stars.disked]
-                fraction = float(len(disked_stars)) / float(len(stars))
+                fraction = float(len(disked_stars)) / float(init_disks)
                 mfraction = numpy.mean(disked_stars.disk_mass.value_in(units.MJupiter))
                 fractions.append(fraction)
                 mfractions.append(mfraction)
@@ -803,71 +806,11 @@ def count_stars(open_path, N, nruns):
         print "*"
 
 
-def disk_survival(open_path, N, nruns, t_end):
-    from lifelines import KaplanMeierFitter
-    from collections import defaultdict
-
-    dt = 0.005
-    times = numpy.arange(0.0, t_end + dt, dt)
-
-    for folder in folders:
-        path = '{0}/{1}/'.format(open_path, folder)
-        all_times = []
-        all_stds = []
-        print folder
-
-        durations = []
-        event_observed = []
-
-        for n in range(nruns):
-            run_path = '{0}/{1}'.format(path, n)
-            dispersed_times = []
-            prev_t = 0.0
-            for t in times:
-                prev_f = '{0}/N{1}_t{2:.3f}.hdf5'.format(run_path, N, prev_t)
-                prev_stars = io.read_set_from_file(prev_f, 'hdf5', close_file=True)
-                f = '{0}/N{1}_t{2:.3f}.hdf5'.format(run_path, N, t)
-                stars = io.read_set_from_file(f, 'hdf5', close_file=True)
-
-                for s in range(len(stars)):
-                    if not stars[s].disked and prev_stars[s].disked:
-                        dispersed_times.append(t)
-                        durations.append(t)
-                        event_observed.append(1)
-                    elif not stars[s].disked and not prev_stars[s].disked:
-                        durations.append(t)
-                        event_observed.append(1)
-                    else:
-                        durations.append(t)
-                        event_observed.append(0)
-
-                prev_t = t
-            all_times.append(numpy.mean(dispersed_times))
-            all_stds.append(numpy.std(dispersed_times))
-
-        #durations = durations_dict.keys()
-        #event_observed = durations_dict.values()
-
-        #print durations
-        #print event_observed
-
-        print numpy.mean(all_times)
-        print numpy.mean(all_stds)
-
-        ## create a kmf object
-        kmf = KaplanMeierFitter()
-
-        ## Fit the data into the model
-        kmf.fit(durations, event_observed, label=folder)
-        print kmf.median_
-
-        ## Create an estimate
-        kmf.plot()
-
-
 def disk_lifetimes(open_path, N, nruns, t_end):
     dt = 0.005
     times = numpy.arange(0.0, t_end + dt, dt)
+
+    folders = ['N1E4_R25', 'N1E4_R5']
 
     for folder in folders:
         path = '{0}/{1}/'.format(open_path, folder)
@@ -928,12 +871,11 @@ def main(open_path, N, save_path, t_end, save, nruns):
     pyplot.style.use('paper')
 
     #separated_masses(open_path, save_path, t_end, N, nruns, save)
-    #disk_fractions(open_path, save_path, t_end, N, nruns, save)
+    disk_fractions(open_path, save_path, t_end, N, nruns, save)
 
     #count_stars(open_path, N, nruns)
     #disk_lifetimes(open_path, N, nruns, t_end)
     #disks_halflife(open_path, N, nruns, t_end)
-    disk_survival(open_path, N, nruns, t_end)
 
     if not save:
         pyplot.show()
