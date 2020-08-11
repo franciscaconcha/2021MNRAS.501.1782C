@@ -741,26 +741,21 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                     d = 100
                     for i in range(len(masses_sorted_by_local_dens)):
                         if len(masses_sorted_by_local_dens) - (i + d) > 0:
-                            binned_means_locdens.append(numpy.mean(masses_sorted_by_local_dens[i:i+d]))
-                            #binned_stds_locdens.append(numpy.std(masses_sorted_by_local_dens[i:i+d]))
+                            binned_means_locdens.append(numpy.median(masses_sorted_by_local_dens[i:i+d]))
                             binned_stds_locdens.append(stats.sem(masses_sorted_by_local_dens[i:i+d]))
-                            locdens_means.append(numpy.mean(sorted_local_dens[i:i+d]))
-                            #print "calculating mean between {0}, {1}".format(i, i + d)
-                            #print masses_sorted_by_distance[i:i+d]
-                            #print numpy.mean(masses_sorted_by_distance[i:i+d])
+                            locdens_means.append(numpy.median(sorted_local_dens[i:i+d]))
                         else:
                             #print "end"
-                            binned_means_locdens.append(numpy.mean(masses_sorted_by_local_dens[i:]))
-                            #binned_stds_locdens.append(numpy.std(masses_sorted_by_local_dens[i:]))
+                            binned_means_locdens.append(numpy.median(masses_sorted_by_local_dens[i:]))
                             binned_stds_locdens.append(stats.sem(masses_sorted_by_local_dens[i:]))
-                            locdens_means.append(numpy.mean(sorted_local_dens[i:i+d]))
+                            locdens_means.append(numpy.median(sorted_local_dens[i:i+d]))
                             break
                     all_binned_means_locdens.append(numpy.array(binned_means_locdens))
                     all_binned_stds_locdens.append(binned_stds_locdens)
 
                 try:
-                    all_means = numpy.mean(all_binned_means_locdens, axis=0)
-                    devs = numpy.mean(all_binned_stds_locdens, axis=0)
+                    all_means = numpy.median(all_binned_means_locdens, axis=0)
+                    devs = numpy.median(all_binned_stds_locdens, axis=0)
                 except:
                     max_len = 0
                     for a in all_binned_means_locdens:
@@ -770,15 +765,15 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                     new_sorted = []
                     new_stds = []
                     for a in all_binned_means_locdens:
-                        b = numpy.pad(a, (max_len - len(a), 0), 'constant')
+                        b = numpy.pad(a, (max_len - len(a), min(a)), 'constant')
                         # constant_values=(min([min(r) for r in all_initial])))
                         new_sorted.append(b)
                     for a in all_binned_stds_locdens:
-                        b = numpy.pad(a, (max_len - len(a), 0), 'constant')
+                        b = numpy.pad(a, (max_len - len(a), min(a)), 'constant')
                         # constant_values=(min([min(r) for r in all_initial])))
                         new_stds.append(b)
-                    all_means = numpy.mean(new_sorted, axis=0)
-                    devs = numpy.mean(new_stds, axis=0)
+                    all_means = numpy.median(new_sorted, axis=0)
+                    devs = numpy.median(new_stds, axis=0)
 
                 all_means_high = all_means + devs
                 all_means_low = all_means - devs
@@ -937,7 +932,7 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                   fontsize=18, framealpha=0.4)
 
     pyplot.xscale('log')
-    pyplot.yscale('log')
+    #pyplot.yscale('log')
 
     if save:
         pyplot.savefig('{0}/2D_dustmass_localdensity.png'.format(save_path))
