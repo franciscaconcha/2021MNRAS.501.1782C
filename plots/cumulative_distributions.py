@@ -1,6 +1,7 @@
 import numpy
 from matplotlib import pyplot
 from scipy import stats
+import pandas
 
 from amuse.lab import *
 from amuse import io
@@ -437,10 +438,109 @@ def cumulative_masses(open_path, save_path, t_end, N, nruns, save):
                   ls='-',
                   lw=3, label=r"$M \leq 0.5 M_{{\odot}}$, {0} Myr".format(2.0))
 
+    # Plotting observational data
+    # OMC-2
+    # Masses are sorted in the table
+    OMC2 = pandas.read_csv('data/OMC-2_vanTerwisga2019.txt',
+                           sep='\xc2\xb1',
+                           names=['disk_mass', 'error'],
+                           skiprows=3,
+                           dtype=numpy.float64)
+
+    OMC2_higher, OMC2_lower = [], []
+
+    for m, e in zip(OMC2.disk_mass, OMC2.error):
+        OMC2_higher.append(m + e)
+        OMC2_lower.append(m - e)
+
+    OMC2_cumulative = 1. * numpy.arange(len(OMC2.disk_mass)) / (len(OMC2.disk_mass) - 1)
+    OMC2_error_cumulative = 1. * numpy.arange(len(OMC2.error)) / (len(OMC2.error) - 1)
+    OMC2_higher_cumulative = 1. * numpy.arange(len(OMC2_higher)) / (len(OMC2_higher) - 1)
+    OMC2_lower_cumulative = 1. * numpy.arange(len(OMC2_lower)) / (len(OMC2_lower) - 1)
+
+    #print OMC2_error_cumulative
+    #print OMC2_higher
+    #print OMC2_lower
+
+    axes.plot(OMC2.disk_mass, OMC2_cumulative, c='r', lw=3, label="OMC-2")
+
+    axes.fill_between(OMC2.disk_mass,
+                      OMC2_higher,
+                      OMC2_lower,
+                      facecolor='r',
+                      alpha=0.2)
+
+    # ONC
+    ONC_Eisner2018 = pandas.read_csv('data/ONC_Eisner2018.txt',
+                                     sep='&',
+                                     names=['ID', 'alpha', 'delta', 'M_star', 'F_{\rm \lambda 850 \mu m}', 'F_{\rm dust}',
+                                            'M_dust', 'R_disk'],
+                                     skiprows=4)
+
+    ONC_masses, ONC_error = [], []
+
+    for me in ONC_Eisner2018.M_dust:
+        m, e = me.split('$\pm$')
+        ONC_masses.append(float(m))
+        ONC_error.append(float(e))
+
+    ONC_Mann2014 = pandas.read_csv('data/ONC_Mann2014.txt',
+                                     sep='\t',
+                                     names=['Field', 'Name', 'alpha', 'delta', 'M_star',
+                                            'F_{\rm \lambda 850 \mu m}', 'F_{\rm dust}',
+                                            'M_dust', 'd', 'Maj', 'Min', 'P.A.', 'Notes'],
+                                     skiprows=7)
+
+    for me in ONC_Mann2014.M_dust:
+        try:
+            m, e = me.split('+or-')
+        except ValueError:  # For the *one* row that is different
+            m = me.split('<or=')[1]
+            e = 0.0
+
+        ONC_masses.append(float(m))
+        ONC_error.append(float(e))
+
+    ONC_masses.sort()
+
+    ONC_masses_cumulative = 1. * numpy.arange(len(ONC_masses)) / (len(ONC_masses) - 1)
+
+    axes.plot(ONC_masses[::-1], ONC_masses_cumulative, c='b', lw=3, label="ONC")
+
+    """axes.fill_between(OMC2['disk_mass'],
+                      OMC2_higher,
+                      OMC2_lower,
+                      facecolor='r',
+                      alpha=0.2)"""
+
+    # Lupus
+    Lupus_Ansdell2016 = pandas.read_csv('data/Lupus_Ansdell2016.txt',
+                                     sep='&',
+                                     names=['Name', 'RAh', 'DE-',
+                                            'Fcont', 'e_Fcont',
+                                            'rms', 'a', 'e_a', 'PosAng', 'e_PosAng', 'i', 'e_i',
+                                            'M_dust', 'e_M_dust'],
+                                     skiprows=31)
+
+    Lupus_Ansdell2018 = pandas.read_csv('data/Lupus_Ansdell2018.txt',
+                                     sep='&',
+                                     names=['everything_else',
+                                            'M_dust', 'e_M_dust'],
+                                     skiprows=47)
+
+    Lupus_masses = numpy.concatenate([Lupus_Ansdell2016['M_dust'].to_numpy(), Lupus_Ansdell2018['M_dust'].to_numpy()])
+    Lupus_errors = numpy.concatenate([Lupus_Ansdell2016['e_M_dust'].to_numpy(), Lupus_Ansdell2018['e_M_dust'].to_numpy()])
+
+    Lupus_masses.sort()
+    # todo sort errors
+
+    Lupus_masses_cumulative = 1. * numpy.arange(len(Lupus_masses)) / (len(Lupus_masses) - 1)
+    axes.plot(Lupus_masses[::-1], Lupus_masses_cumulative, c='g', lw=3, label="Lupus")
+
     axes.set_xscale('log')
+    axes.set_xlim([0.01, 500.0])
     axes.set_ylim([0.0, 1.0])
 
-    # Radii labels
     axes.set_xlabel(r'$\mathrm{M}_{disc, dust}$ [$\mathrm{M}_{\oplus}$]')
     axes.set_ylabel(r'$f_{\geq \mathrm{M}_{disc, dust}}$', fontsize=24)
 
