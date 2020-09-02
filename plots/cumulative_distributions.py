@@ -455,16 +455,10 @@ def cumulative_masses(open_path, save_path, t_end, N, nruns, save):
 
     OMC2_cumulative = 1. * numpy.arange(len(OMC2.disk_mass)) / (len(OMC2.disk_mass) - 1)
     OMC2_error_cumulative = 1. * numpy.arange(len(OMC2.error)) / (len(OMC2.error) - 1)
-    OMC2_higher_cumulative = 1. * numpy.arange(len(OMC2_higher)) / (len(OMC2_higher) - 1)
-    OMC2_lower_cumulative = 1. * numpy.arange(len(OMC2_lower)) / (len(OMC2_lower) - 1)
-
-    #print OMC2_error_cumulative
-    #print OMC2_higher
-    #print OMC2_lower
 
     axes.plot(OMC2.disk_mass, OMC2_cumulative, c='r', lw=3, label="OMC-2")
 
-    axes.fill_between(OMC2.disk_mass,
+    axes.fill_betweenx(OMC2_error_cumulative,
                       OMC2_higher,
                       OMC2_lower,
                       facecolor='r',
@@ -501,16 +495,21 @@ def cumulative_masses(open_path, save_path, t_end, N, nruns, save):
         ONC_masses.append(float(m))
         ONC_error.append(float(e))
 
+    ONC_higher = numpy.array(ONC_masses) + numpy.array(ONC_error)
+    ONC_lower = numpy.array(ONC_masses) - numpy.array(ONC_error)
+
     ONC_masses.sort()
 
     ONC_masses_cumulative = 1. * numpy.arange(len(ONC_masses)) / (len(ONC_masses) - 1)
+    ONC_error_cumulative = 1. * numpy.arange(len(ONC_error)) / (len(ONC_error) - 1)
 
     axes.plot(ONC_masses[::-1], ONC_masses_cumulative, c='b', lw=3, label="ONC")
+    """axes.plot(ONC_masses[::-1], ONC_higher, c='k', lw=3, label="ONC")
 
-    """axes.fill_between(OMC2['disk_mass'],
-                      OMC2_higher,
-                      OMC2_lower,
-                      facecolor='r',
+    axes.fill_between(ONC_error_cumulative,
+                      ONC_higher,
+                      ONC_lower,
+                      facecolor='b',
                       alpha=0.2)"""
 
     # Lupus
@@ -531,11 +530,29 @@ def cumulative_masses(open_path, save_path, t_end, N, nruns, save):
     Lupus_masses = numpy.concatenate([Lupus_Ansdell2016['M_dust'].to_numpy(), Lupus_Ansdell2018['M_dust'].to_numpy()])
     Lupus_errors = numpy.concatenate([Lupus_Ansdell2016['e_M_dust'].to_numpy(), Lupus_Ansdell2018['e_M_dust'].to_numpy()])
 
+    Lupus_sorted_errors = [x for _, x in sorted(zip(Lupus_masses, Lupus_errors))]
     Lupus_masses.sort()
-    # todo sort errors
+
+    Lupus_higher, Lupus_lower = [], []
+
+    for m, e in zip(Lupus_masses, Lupus_sorted_errors):
+        Lupus_higher.append(m + e)
+        Lupus_lower.append(m - e)
+
+    #Lupus_higher = Lupus_masses + Lupus_sorted_errors
+    #Lupus_lower = Lupus_masses - Lupus_sorted_errors
 
     Lupus_masses_cumulative = 1. * numpy.arange(len(Lupus_masses)) / (len(Lupus_masses) - 1)
+    Lupus_errors_cumulative = 1. * numpy.arange(len(Lupus_sorted_errors)) / (len(Lupus_sorted_errors) - 1)
+
     axes.plot(Lupus_masses[::-1], Lupus_masses_cumulative, c='g', lw=3, label="Lupus")
+    axes.plot(Lupus_masses[::-1], Lupus_higher[::-1], c='k', lw=3, label="Lupus")
+
+    axes.fill_between(Lupus_errors_cumulative,
+                      Lupus_higher,
+                      Lupus_lower,
+                      facecolor='k',
+                      alpha=0.2)
 
     axes.set_xscale('log')
     axes.set_xlim([0.01, 500.0])
