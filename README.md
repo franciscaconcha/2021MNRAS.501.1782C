@@ -10,7 +10,7 @@ For questions please contact Francisca Concha-Ramírez, fconcha at strw.leidenun
 ## Getting Started
 
 ### Requisites
-* Python 3
+* Python 2.7. Should work fine with Python 3 but it has not been tested.
 * AMUSE: https://amusecode.github.io
 * VADER: https://bitbucket.org/krumholz/vader/src
 * scipy
@@ -52,16 +52,13 @@ amuse.sh src/vader_cluster_parallel.py --help
 There are several different scripts to create the Figures of the paper. All of them are located in the ```plots``` directoy:
 
 * Figure 1: ```tracks.py```
-* Figures 2 and 3: ```disk_fractions.py```
-* Figure 4: ```radiation.py```
-* Figures 5 and 6: ```binned.py```
-* Figures 7 and 8: ```cumulative_distributions.py```
-* Figures 9 and 10: ```scatter_plots.py```
+* Figure 2: ```disc_fractions.py```
+* Figures 3 and 4: ```binned.py```
 
 Each script can be run with
 
 ```
-amuse.sh plots/<script>.py
+amuse.sh plots/<scriptname>.py
 ```
 
 A list of options is available for each script, including the path to the files that you want to use for the plots. To see the list of options add ```--help``` or ```-h``` to the line above. The results used on the paper are available in the ```results/``` directory.
