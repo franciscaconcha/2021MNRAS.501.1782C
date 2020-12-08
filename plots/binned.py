@@ -182,7 +182,7 @@ class R5ShadedObjectHandler(object):
 
 
 def model_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save, all_in_one=True):
-    """ Figure 5: Binned mean disc mass versus local stellar number density.
+    """ Figure 3: Binned mean disc mass versus local stellar number density.
 
     :param open_path: path to open results
     :param save_path: path to save figure
@@ -392,287 +392,8 @@ def model_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save, all
             fig5.savefig('{0}/R5_binned_mass_vs_local_density.png'.format(save_path))
 
 
-def mass_vs_local_density(open_path, save_path, t_end, N, nruns, save):
-    axs = [None, None]
-    fig1, axs[0] = pyplot.subplots(1)
-
-    max_mass = 0.0
-
-    dt = 0.2
-    times = numpy.arange(0.000, t_end + dt, dt)
-
-    for folder in folders:
-        path = '{0}/{1}'.format(open_path, folder)
-        for t in times:
-            if nruns > 0:
-                label = folder.split('_')[1]
-                all_binned_means = []
-                all_binned_stds = []
-                all_binned_means_locdens = []
-                all_binned_stds_locdens = []
-
-                for n in range(nruns):
-                    f = '{0}/{1}/N{2}_t{3:.3f}.hdf5'.format(path, n, N, t)
-                    stars = io.read_set_from_file(f, 'hdf5', close_file=True)
-                    center = stars.center_of_mass()
-                    #stars = stars[stars.disked == True]
-
-                    positions = []
-                    for s in stars:
-                        positions.append(numpy.array([s.x.value_in(units.parsec),
-                                                      s.y.value_in(units.parsec),
-                                                      s.z.value_in(units.parsec)]))
-                    positions = numpy.array(positions)
-
-                    tree = KDTree(positions)
-
-                    nearest_dist, nearest_ind = tree.query(positions, k=5)
-                    # print(nearest_dist)  # drop id; assumes sorted -> see args!
-                    # print(nearest_ind)
-
-                    for i in range(len(stars)):
-                        s = stars[i]
-                        distances_to_neighbours = nearest_dist[i]
-                        max_distance = max(distances_to_neighbours)
-                        s.local_density = 5. / ((4. / 3.) * numpy.pi * max_distance ** 3)
-
-                    disk_masses = stars.disk_mass.value_in(units.MJupiter)
-
-                    masses_sorted_by_local_dens = [float(x) for _, x in sorted(zip(stars.local_density, disk_masses))]
-
-                    sorted_local_dens = sorted(stars.local_density)
-
-                    # LOCAL DENSITY
-                    binned_means_locdens = []
-                    binned_stds_locdens = []
-                    locdens_means = []
-                    d = 100
-                    for i in range(len(masses_sorted_by_local_dens)):
-                        if len(masses_sorted_by_local_dens) - (i + d) > 0:
-                            binned_means_locdens.append(numpy.mean(masses_sorted_by_local_dens[i:i+d]))
-                            #binned_stds_locdens.append(numpy.std(masses_sorted_by_local_dens[i:i+d]))
-                            binned_stds_locdens.append(stats.sem(masses_sorted_by_local_dens[i:i+d]))
-                            locdens_means.append(numpy.mean(sorted_local_dens[i:i+d]))
-                            #print "calculating mean between {0}, {1}".format(i, i + d)
-                            #print masses_sorted_by_distance[i:i+d]
-                            #print numpy.mean(masses_sorted_by_distance[i:i+d])
-                        else:
-                            #print "end"
-                            binned_means_locdens.append(numpy.mean(masses_sorted_by_local_dens[i:]))
-                            #binned_stds_locdens.append(numpy.std(masses_sorted_by_local_dens[i:]))
-                            binned_stds_locdens.append(stats.sem(masses_sorted_by_local_dens[i:]))
-                            locdens_means.append(numpy.mean(sorted_local_dens[i:i+d]))
-                            break
-                    all_binned_means_locdens.append(numpy.array(binned_means_locdens))
-                    all_binned_stds_locdens.append(binned_stds_locdens)
-
-                try:
-                    all_means = numpy.mean(all_binned_means_locdens, axis=0)
-                    devs = numpy.mean(all_binned_stds_locdens, axis=0)
-                except ValueError:
-                    max_len = 0
-                    for a in all_binned_means_locdens:
-                        if len(a) > max_len:
-                            max_len = len(a)
-
-                    new_sorted = []
-                    for a in all_binned_means_locdens:
-                        b = numpy.pad(a, (max_len - len(a), 0), 'constant')
-                        # constant_values=(min([min(r) for r in all_initial])))
-                        new_sorted.append(b)
-                    all_means = numpy.mean(all_binned_means_locdens, axis=0)
-                    devs = numpy.mean(all_binned_stds_locdens, axis=0)
-
-                all_means_high = all_means + devs
-                all_means_low = all_means - devs
-
-                if t == 0.0:
-                    axs[0].plot(locdens_means,
-                                all_means,
-                                color=colors[label],
-                                lw=3,
-                                ls=":")
-
-                    axs[0].fill_between(locdens_means,
-                                        all_means_high,
-                                        all_means_low,
-                                        facecolor=colors[label],
-                                        alpha=0.2)
-                elif t == 2.0:
-                    axs[0].plot(locdens_means,
-                                all_means,
-                                color=colors[label],
-                                lw=3,
-                                label=labels[label])
-
-                    axs[0].fill_between(locdens_means,
-                                        all_means_high,
-                                        all_means_low,
-                                        facecolor=colors[label],
-                                        alpha=0.2)
-
-    # N1E4 results
-    """folders1E4 = ['N1E4_R5']
-    N = 10000
-    nruns = 1
-
-    for folder in folders1E4:
-        path = '{0}/{1}'.format(open_path, folder)
-        for t in times:
-            if nruns > 0:
-                label = 'N1E4' + folder.split('_')[1]
-                all_binned_means = []
-                all_binned_stds = []
-                all_binned_means_locdens = []
-                all_binned_stds_locdens = []
-
-                for n in range(nruns):
-                    f = '{0}/{1}/N{2}_t{3:.3f}.hdf5'.format(path, n, N, t)
-                    stars = io.read_set_from_file(f, 'hdf5', close_file=True)
-                    center = stars.center_of_mass()
-                    #stars = stars[stars.disked == True]
-
-                    positions = []
-                    for s in stars:
-                        positions.append(numpy.array([s.x.value_in(units.parsec),
-                                                      s.y.value_in(units.parsec),
-                                                      s.z.value_in(units.parsec)]))
-                    positions = numpy.array(positions)
-
-                    tree = KDTree(positions)
-
-                    nearest_dist, nearest_ind = tree.query(positions, k=5)
-                    # print(nearest_dist)  # drop id; assumes sorted -> see args!
-                    # print(nearest_ind)
-
-                    for i in range(len(stars)):
-                        s = stars[i]
-                        distances_to_neighbours = nearest_dist[i]
-                        max_distance = max(distances_to_neighbours)
-                        s.local_density = 5. / ((4. / 3.) * numpy.pi * max_distance ** 3)
-
-                    disk_masses = stars.disk_mass.value_in(units.MJupiter)
-
-                    masses_sorted_by_local_dens = [float(x) for _, x in sorted(zip(stars.local_density, disk_masses))]
-
-                    sorted_local_dens = sorted(stars.local_density)
-
-                    # LOCAL DENSITY
-                    binned_means_locdens = []
-                    binned_stds_locdens = []
-                    locdens_means = []
-                    d = 100
-                    for i in range(len(masses_sorted_by_local_dens)):
-                        if len(masses_sorted_by_local_dens) - (i + d) > 0:
-                            binned_means_locdens.append(numpy.mean(masses_sorted_by_local_dens[i:i+d]))
-                            #binned_stds_locdens.append(numpy.std(masses_sorted_by_local_dens[i:i+d]))
-                            binned_stds_locdens.append(stats.sem(masses_sorted_by_local_dens[i:i+d]))
-                            locdens_means.append(numpy.mean(sorted_local_dens[i:i+d]))
-                            #print "calculating mean between {0}, {1}".format(i, i + d)
-                            #print masses_sorted_by_distance[i:i+d]
-                            #print numpy.mean(masses_sorted_by_distance[i:i+d])
-                        else:
-                            #print "end"
-                            binned_means_locdens.append(numpy.mean(masses_sorted_by_local_dens[i:]))
-                            #binned_stds_locdens.append(numpy.std(masses_sorted_by_local_dens[i:]))
-                            binned_stds_locdens.append(stats.sem(masses_sorted_by_local_dens[i:]))
-                            locdens_means.append(numpy.mean(sorted_local_dens[i:i+d]))
-                            break
-                    all_binned_means_locdens.append(numpy.array(binned_means_locdens))
-                    all_binned_stds_locdens.append(binned_stds_locdens)
-
-                try:
-                    all_means = numpy.mean(all_binned_means_locdens, axis=0)
-                    devs = numpy.mean(all_binned_stds_locdens, axis=0)
-                except ValueError:
-                    max_len = 0
-                    for a in all_binned_means_locdens:
-                        if len(a) > max_len:
-                            max_len = len(a)
-
-                    new_sorted = []
-                    for a in all_binned_means_locdens:
-                        b = numpy.pad(a, (max_len - len(a), 0), 'constant')
-                        # constant_values=(min([min(r) for r in all_initial])))
-                        new_sorted.append(b)
-                    all_means = numpy.mean(all_binned_means_locdens, axis=0)
-                    devs = numpy.mean(all_binned_stds_locdens, axis=0)
-
-                all_means_high = all_means + devs
-                all_means_low = all_means - devs
-
-                if t == 0.0:
-                    axs[0].plot(locdens_means,
-                                all_means,
-                                color=colors[label],
-                                lw=3,
-                                ls=":")
-
-                    axs[0].fill_between(locdens_means,
-                                        all_means_high,
-                                        all_means_low,
-                                        facecolor=colors[label],
-                                        alpha=0.2)
-                elif t == 2.0:
-                    axs[0].plot(locdens_means,
-                                all_means,
-                                color=colors[label],
-                                lw=3,
-                                label=labels[label])
-
-                    axs[0].fill_between(locdens_means,
-                                        all_means_high,
-                                        all_means_low,
-                                        facecolor=colors[label],
-                                        alpha=0.2)"""
-
-
-    #axs[0].legend(loc='best', fontsize=22, framealpha=1.)#, ncol=2)
-    axs[0].set_xlabel(r'Local stellar number density [pc$^{-3}$]')
-    axs[0].set_ylabel(r'Binned mean disc mass [$\mathrm{M}_{Jup}$]')
-    #axs[0].set_title(r'N = {0}, t = {1} Myr'.format(N, t_end))
-    #axs[1].set_ylim(bottom=1.0, top=max_mass)
-    # pyplot.xlim([0.0, t_end])
-    # pyplot.ylim([0.0, 1.0])
-
-    first_legend = pyplot.legend([R01ShadedObject(), R03ShadedObject(), R05ShadedObject(),
-                                  R1ShadedObject(), R25ShadedObject(), R5ShadedObject()],
-                                  [labels['R01'], labels['R03'], labels['R05'],
-                                   #"", "",
-                                   labels['R1'], labels['R25'], labels['R5'],
-                                   ],
-                                  handler_map={R01ShadedObject: R01ShadedObjectHandler(),
-                                               R03ShadedObject: R03ShadedObjectHandler(),
-                                               R05ShadedObject: R05ShadedObjectHandler(),
-                                               R1ShadedObject: R1ShadedObjectHandler(),
-                                               R25ShadedObject: R25ShadedObjectHandler(),
-                                               R5ShadedObject: R5ShadedObjectHandler()},
-                                  loc='lower left',
-                                  #bbox_to_anchor=(0.52, -0.4),
-                                  ncol=2,
-                                  fontsize=18, framealpha=0.4)
-
-    pyplot.gca().add_artist(first_legend)
-
-    pyplot.legend([DottedShadedObject(), SolidShadedObject()],
-                  [r"t = 0.0 Myr",
-                   r"t = 2.0 Myr",
-                   ],
-                  handler_map={DottedShadedObject: DottedShadedObjectHandler(),
-                               SolidShadedObject: SolidShadedObjectHandler()},
-                  loc='lower left',
-                  bbox_to_anchor=(0.0, 0.2),
-                  fontsize=18, framealpha=0.4)
-
-    pyplot.xscale('log')
-    pyplot.yscale('log')
-
-    if save:
-        pyplot.savefig('{0}/all_binned_masses_vs_local_density.png'.format(save_path))
-
-
 def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save):
-    """ Figure 6: Binned mean disc mass versus local stellar number density, projected in two dimensions.
+    """ Figure 4: Binned mean disc mass versus local stellar number density, projected in two dimensions.
 
     :param open_path: path to open results
     :param save_path: path to save figure
@@ -688,6 +409,7 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
 
     dt = 0.2
     times = numpy.arange(0.0, t_end + dt, dt)
+    times = numpy.array([0.0, 2.0])
 
     for folder in folders:
         path = '{0}/{1}'.format(open_path, folder)
@@ -709,7 +431,7 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                         f = '{0}/{1}/N{2}_t{3:.3f}.hdf5'.format(path, n, N, last_t)
                         stars = io.read_set_from_file(f, 'hdf5', close_file=True)
                     center = stars.center_of_mass()
-                    #stars = stars[stars.disked == True]
+                    stars = stars[stars.disked]
 
                     positions = []
                     for s in stars:
@@ -731,8 +453,20 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                         s.local_density = 5. / (numpy.pi * max_distance ** 2)
 
                     disk_masses = stars.disk_mass.value_in(units.MEarth) / 100
-                    masses_sorted_by_local_dens = [float(x) for _, x in sorted(zip(stars.local_density, disk_masses))]
+                    masses_sorted_by_local_dens1 = [float(x) for _, x in sorted(zip(stars.local_density, disk_masses))]
                     sorted_local_dens = sorted(stars.local_density)
+
+                    masses_sorted_by_local_dens2 = []
+
+                    for m in masses_sorted_by_local_dens1:
+                        #if m > 0.0:
+                        masses_sorted_by_local_dens2.append(numpy.log10(m))
+                        #else:
+                        #masses_sorted_by_local_dens2.append(0.0)
+
+                    masses_sorted_by_local_dens = []
+                    for m in masses_sorted_by_local_dens2:
+                        masses_sorted_by_local_dens.append(numpy.power(10, m))
 
                     # LOCAL DENSITY
                     binned_means_locdens = []
@@ -741,21 +475,21 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                     d = 100
                     for i in range(len(masses_sorted_by_local_dens)):
                         if len(masses_sorted_by_local_dens) - (i + d) > 0:
-                            binned_means_locdens.append(numpy.median(masses_sorted_by_local_dens[i:i+d]))
+                            binned_means_locdens.append(numpy.mean(masses_sorted_by_local_dens[i:i+d]))
                             binned_stds_locdens.append(stats.sem(masses_sorted_by_local_dens[i:i+d]))
-                            locdens_means.append(numpy.median(sorted_local_dens[i:i+d]))
+                            locdens_means.append(numpy.mean(sorted_local_dens[i:i+d]))
                         else:
                             #print "end"
-                            binned_means_locdens.append(numpy.median(masses_sorted_by_local_dens[i:]))
+                            binned_means_locdens.append(numpy.mean(masses_sorted_by_local_dens[i:]))
                             binned_stds_locdens.append(stats.sem(masses_sorted_by_local_dens[i:]))
-                            locdens_means.append(numpy.median(sorted_local_dens[i:i+d]))
+                            locdens_means.append(numpy.mean(sorted_local_dens[i:i+d]))
                             break
                     all_binned_means_locdens.append(numpy.array(binned_means_locdens))
                     all_binned_stds_locdens.append(binned_stds_locdens)
 
                 try:
-                    all_means = numpy.median(all_binned_means_locdens, axis=0)
-                    devs = numpy.median(all_binned_stds_locdens, axis=0)
+                    all_means = numpy.mean(all_binned_means_locdens, axis=0)
+                    devs = numpy.mean(all_binned_stds_locdens, axis=0)
                 except:
                     max_len = 0
                     for a in all_binned_means_locdens:
@@ -765,18 +499,23 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                     new_sorted = []
                     new_stds = []
                     for a in all_binned_means_locdens:
-                        b = numpy.pad(a, (max_len - len(a), min(a)), 'constant')
+                        b = numpy.pad(a, (max_len - len(a), 0), 'constant', constant_values=(min(a), max(a)))
                         # constant_values=(min([min(r) for r in all_initial])))
+                        #print len(a), len(b), len(b)-len(a), max_len - len(a)
                         new_sorted.append(b)
                     for a in all_binned_stds_locdens:
-                        b = numpy.pad(a, (max_len - len(a), min(a)), 'constant')
+                        b = numpy.pad(a, (max_len - len(a), 0), 'constant', constant_values=(min(a), max(a)))
                         # constant_values=(min([min(r) for r in all_initial])))
                         new_stds.append(b)
-                    all_means = numpy.median(new_sorted, axis=0)
-                    devs = numpy.median(new_stds, axis=0)
+                    all_means = numpy.mean(new_sorted, axis=0)
+                    devs = numpy.mean(new_stds, axis=0)
+
+                locdens_means = numpy.pad(locdens_means, (len(all_means) - len(locdens_means), 0), 'constant', constant_values=(min(locdens_means), max(locdens_means)))
 
                 all_means_high = all_means + devs
                 all_means_low = all_means - devs
+
+                #print all_means
 
                 if t == 0.0:
                     axs[0].plot(locdens_means,
@@ -805,6 +544,7 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                                         facecolor=colors[label],
                                         alpha=0.2)
 
+    # Observational points
     from astropy.table import Table
     data = Table.read('data/surfacedensities_var.dat', format='ascii.ecsv')
     point_ONC = [float(data[0]['surfdens_YSO']),
@@ -837,7 +577,6 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
     sigmas = [point_ONC[2], point_Lupus[2], point_OMC2[2], point_NGCE[2], point_NGCW[2], point_Taurus[2]]
     names = [point_ONC[3], point_Lupus[3], point_OMC2[3], point_NGCE[3], point_NGCW[3], point_Taurus[3]]
 
-    #pyplot.scatter(surfdens, obsmasses, c='k', marker='x', s=80, lw=4)
     markers, caps, bars = pyplot.errorbar(surfdens[:3], obsmasses[:3], yerr=sigmas[:3],
                                           color='navy',
                                           marker='D',
@@ -873,6 +612,12 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                                           #alpha=0.5,
                                           zorder=15)
     [bar.set_alpha(0.5) for bar in bars]
+
+    pyplot.scatter(21.97220445068663, 2.24,
+                   color='red',
+                   marker='D',
+                   s=100,
+    )
 
     # Positions for text labels
     xlocs = {data[0]['Region']: surfdens[0] * 1.25,  # ONC
@@ -932,7 +677,7 @@ def projected_mass_vs_local_density(open_path, save_path, t_end, N, nruns, save)
                   fontsize=18, framealpha=0.4)
 
     pyplot.xscale('log')
-    #pyplot.yscale('log')
+    pyplot.yscale('log')
 
     if save:
         pyplot.savefig('{0}/2D_dustmass_localdensity.png'.format(save_path))
