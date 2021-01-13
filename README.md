@@ -1,9 +1,9 @@
-# Effects of stellar density on the photoevaporation of circumstellar discs [arXiv:2006.07378]
+# Effects of stellar density on the photoevaporation of circumstellar discs [2021MNRAS.501.1782C]
 #### Francisca Concha-Ramírez, Martijn J. C. Wilhelm, Simon Portegies Zwart, Sierk E. van Terwisga, Alvaro Hacar
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.3897171.svg)](https://doi.org/10.5281/zenodo.3897171)
  [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0) ![python](https://img.shields.io/badge/python-3.0-yellow.svg)
 
-(Code to run the simulations and generate figures of the paper: [Effects of stellar density on the photoevaporation of circumstellar discs](https://arxiv.org/abs/2006.07378).)
+(Code to run the simulations and generate figures of the paper: [Effects of stellar density on the photoevaporation of circumstellar discs](https://ui.adsabs.harvard.edu/abs/2021MNRAS.501.1782C/abstract).)
 
 For questions please contact Francisca Concha-Ramírez, fconcha at strw.leidenuniv.nl
 
